@@ -1,10 +1,9 @@
-within IDEAS.Buildings.Components.Examples;
+within IDEAS.Buildings.Linearization.BaseClasses;
 model LinCase900
   import Buildings;
-  extends Modelica.Icons.Example;
 
 protected
-  Zone                            gF(
+  Components.Zone gF(
     V=129.6,
     n50=0.5*20,
     corrCV=0.822,
@@ -12,28 +11,30 @@ protected
     linear=true,
     redeclare package Medium = Medium,
     linearize=true,
-    nSurf=9)
-    annotation (Placement(transformation(extent={{50,-2},{90,38}})));
-  OuterWall[                           4] wall(
+    nSurf=9) annotation (Placement(transformation(extent={{50,-2},{90,38}})));
+  Components.OuterWall[4] wall(
     final AWall={21.6,16.2,9.6,16.2},
     final azi={IDEAS.Constants.North,IDEAS.Constants.East,IDEAS.Constants.South,
         IDEAS.Constants.West},
     final inc={IDEAS.Constants.Wall,IDEAS.Constants.Wall,IDEAS.Constants.Wall,
         IDEAS.Constants.Wall},
     redeclare final parameter
-      IDEAS.Buildings.Validation.Data.Constructions.HeavyWall                         constructionType,
+      IDEAS.Buildings.Validation.Data.Constructions.HeavyWall constructionType,
+
     redeclare final parameter
-      IDEAS.Buildings.Validation.Data.Insulation.foaminsulation                         insulationType,
+      IDEAS.Buildings.Validation.Data.Insulation.foaminsulation insulationType,
+
     final insulationThickness={0.0615,0.0615,0.0615,0.0615}) annotation (
       Placement(transformation(
         extent={{-5,-10},{5,10}},
         rotation=90,
         origin={-39,-16})));
-  BoundaryWall                            floor(
+  Components.BoundaryWall floor(
     redeclare final parameter
-      IDEAS.Buildings.Validation.Data.Constructions.HeavyFloor                         constructionType,
+      IDEAS.Buildings.Validation.Data.Constructions.HeavyFloor constructionType,
+
     redeclare final parameter
-      IDEAS.Buildings.Validation.Data.Insulation.insulation                         insulationType,
+      IDEAS.Buildings.Validation.Data.Insulation.insulation insulationType,
     final insulationThickness=1.003,
     final AWall=48,
     final inc=IDEAS.Constants.Floor,
@@ -41,26 +42,26 @@ protected
         extent={{-5,-10},{5,10}},
         rotation=90,
         origin={-9,-16})));
-  LinearizableWindow[3] win(
+  Components.LinearizableWindow[3] win(
     final A={6,6,6},
     redeclare final parameter
-      IDEAS.Buildings.Validation.Data.Glazing.GlaBesTest                         glazing,
+      IDEAS.Buildings.Validation.Data.Glazing.GlaBesTest glazing,
     each inc=IDEAS.Constants.Wall,
     each azi=IDEAS.Constants.South,
     redeclare replaceable IDEAS.Buildings.Components.Shading.None shaType,
     redeclare final parameter IDEAS.Buildings.Data.Frames.None fraType,
     each frac=0,
     each linearizeWindow=true,
-    each linOut=false)
-    annotation (Placement(transformation(
+    each linOut=false) annotation (Placement(transformation(
         extent={{-5,-10},{5,10}},
         rotation=90,
         origin={21,-16})));
-  OuterWall                            roof(
+  Components.OuterWall roof(
     redeclare final parameter
-      IDEAS.Buildings.Validation.Data.Constructions.LightRoof                         constructionType,
+      IDEAS.Buildings.Validation.Data.Constructions.LightRoof constructionType,
+
     redeclare final parameter
-      IDEAS.Buildings.Validation.Data.Insulation.fiberglass                         insulationType,
+      IDEAS.Buildings.Validation.Data.Insulation.fiberglass insulationType,
     final insulationThickness=0.1118,
     final AWall=48,
     final inc=IDEAS.Constants.Ceiling,
@@ -83,8 +84,8 @@ public
   input BoundaryConditions.WeatherData.Bus
                                      weaBus1(numSolBus=sim.numAzi + 1)
     annotation (Placement(transformation(extent={{-108,24},{-88,44}})));
-  input Interfaces.WinBus winBus[3](nLay=win.glazing.nLay) annotation (
-      Placement(transformation(
+  input Components.Interfaces.WinBus winBus[3](nLay=win.glazing.nLay)
+    annotation (Placement(transformation(
         extent={{-20,-20},{20,20}},
         rotation=90,
         origin={-98,-50})));
@@ -136,5 +137,20 @@ equation
       thickness=0.5,
       smooth=Smooth.None));
   annotation (Diagram(coordinateSystem(preserveAspectRatio=false, extent={{-100,
-            -100},{100,100}}), graphics));
+            -100},{100,100}}), graphics), Documentation(info="<html>
+<p>Run script to linearize:</p>
+<pre>
+re=Modelica_LinearSystems2.ModelAnalysis.Linearize(&QUOT;IDEAS.Buildings.Components.Examples.LinCase900&QUOT;);
+writeMatrix(fileName=&QUOT;ss.mat&QUOT;,matrixName=&QUOT;A&QUOT;,matrix=re.A);
+writeMatrix(fileName=&QUOT;ss.mat&QUOT;,matrixName=&QUOT;B&QUOT;,matrix=re.B, append=true);
+writeMatrix(fileName=&QUOT;ss.mat&QUOT;,matrixName=&QUOT;C&QUOT;,matrix=re.C, append=true);
+writeMatrix(fileName=&QUOT;ss.mat&QUOT;,matrixName=&QUOT;D&QUOT;,matrix=re.D, append=true);</pre>
+</html>", revisions="<html>
+<ul>
+<li>
+March, 2015 by Filip Jorissen:<br/>
+First implementation
+</li>
+</ul>
+</html>"));
 end LinCase900;

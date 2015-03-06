@@ -1,7 +1,18 @@
 within IDEAS.Buildings.Components;
 model LinearizableWindow "Window with options for enabling linearization"
 
-  extends IDEAS.Buildings.Components.Interfaces.StateWall;
+  outer IDEAS.SimInfoManager sim
+    "Simulation information manager for climate data"
+    annotation (Placement(transformation(extent={{30,-100},{50,-80}})));
+  IDEAS.Buildings.Components.Interfaces.ZoneBus propsBus_a(numAzi=sim.numAzi) if not linearizeWindow or not linOut
+    "Inner side (last layer)"
+                     annotation (Placement(transformation(
+        extent={{-20,-20},{20,20}},
+        rotation=-90,
+        origin={50,40}), iconTransformation(
+        extent={{-20,-20},{20,20}},
+        rotation=-90,
+        origin={50,40})));
 
   parameter Boolean linearizeWindow = false
     "Enable linearization inputs/outputs";
@@ -115,17 +126,14 @@ public
     annotation (Placement(transformation(extent={{-70,-62},{-62,-54}})));
   Modelica.Blocks.Routing.RealPassThrough Tdes "Design temperature passthrough"
     annotation (Placement(transformation(extent={{60,70},{80,90}})));
-  Modelica.Thermal.HeatTransfer.Sources.FixedTemperature fixedTemp[4](each T=293.15) if
-     enableNonLin and linearizeWindow "Dummy connection for heatports"
-                                     annotation (Placement(transformation(
-        extent={{-10,-10},{10,10}},
-        rotation=90,
-        origin={70,-10})));
   Interfaces.WinBus winBus(nLay=glazing.nLay) if
                               linearizeWindow annotation (Placement(transformation(
         extent={{-20,-20},{20,20}},
         rotation=270,
         origin={52,-60})));
+  BoundaryConditions.WeatherData.Bus weaBus(numSolBus=sim.numAzi + 1) if
+                                               linearizeWindow and linOut
+    annotation (Placement(transformation(extent={{-90,90},{-70,110}})));
 initial equation
   QTra_design =U_value*A*(273.15 + 21 - Tdes.y);
 
@@ -294,22 +302,6 @@ equation
       points={{58,80},{50,80},{50,40}},
       color={0,0,127},
       smooth=Smooth.None));
-  connect(fixedTemp[1].port, propsBus_a.surfCon) annotation (Line(
-      points={{70,0},{70,40},{50,40}},
-      color={191,0,0},
-      smooth=Smooth.None));
-  connect(fixedTemp[2].port, propsBus_a.surfRad) annotation (Line(
-      points={{70,0},{70,40},{50,40}},
-      color={191,0,0},
-      smooth=Smooth.None));
-  connect(fixedTemp[3].port, propsBus_a.iSolDir) annotation (Line(
-      points={{70,0},{70,40},{50,40}},
-      color={191,0,0},
-      smooth=Smooth.None));
-  connect(fixedTemp[4].port, propsBus_a.iSolDif) annotation (Line(
-      points={{70,0},{70,40},{50,40}},
-      color={191,0,0},
-      smooth=Smooth.None));
  for i in 1:solWin.nLay loop
    if linearizeWindow and not linOut then
    end if;
@@ -337,6 +329,15 @@ equation
       smooth=Smooth.None));
   connect(solWin.AbsQFlowOutput, winBus.AbsQFlow) annotation (Line(
       points={{10.6,-62},{32,-62},{32,-60},{52,-60}},
+      color={0,0,127},
+      smooth=Smooth.None));
+  connect(radSolData.weaBus, weaBus) annotation (Line(
+      points={{-80,-52},{-80,100}},
+      color={255,204,51},
+      thickness=0.5,
+      smooth=Smooth.None));
+  connect(Tdes.u, weaBus.Tdes) annotation (Line(
+      points={{58,80},{58,104},{-80,104},{-80,100}},
       color={0,0,127},
       smooth=Smooth.None));
   annotation (
@@ -388,8 +389,8 @@ equation
 </html>", revisions="<html>
 <ul>
 <li>
-February 10, 2015 by Filip Jorissen:<br/>
-Adjusted implementation for grouping of solar calculations.
+March, 2015 by Filip Jorissen:<br/>
+First implementation
 </li>
 </ul>
 </html>"));
