@@ -3,6 +3,10 @@ model LinearizableWindow "Window with options for enabling linearization"
 
   extends IDEAS.Buildings.Components.Interfaces.StateWall;
 
+  parameter Boolean linearizeWindow = false
+    "Enable linearization inputs/outputs";
+  parameter Boolean linOut "'Outer' window model when linearizing";
+
   parameter Modelica.SIunits.Area A "Total window and windowframe area";
   parameter Real frac(
     min=0,
@@ -26,8 +30,8 @@ model LinearizableWindow "Window with options for enabling linearization"
     constrainedby IDEAS.Buildings.Data.Interfaces.Frame "Window frame type"
     annotation (__Dymola_choicesAllMatching=true, Dialog(group=
           "Construction details"));
-  replaceable IDEAS.Buildings.Components.Shading.None shaType constrainedby
-    Interfaces.StateShading(final azi=azi) "Shading type" annotation (Placement(transformation(extent={{-36,-70},{-26,-50}})),
+  replaceable IDEAS.Buildings.Components.Shading.None shaType if  enableNonLin
+    constrainedby Interfaces.StateShading(final azi=azi) "Shading type" annotation (Placement(transformation(extent={{-36,-70},{-26,-50}})),
       __Dymola_choicesAllMatching=true, Dialog(group="Construction details"));
 
   Modelica.Blocks.Interfaces.RealInput Ctrl if shaType.controlled
@@ -41,23 +45,32 @@ model LinearizableWindow "Window with options for enabling linearization"
         origin={-30,-100})));
 
 protected
+  parameter Boolean enableNonLin = not linearizeWindow or linOut
+    "Disable nonlinear part when linearizing model unless it is the outer part.";
+  parameter Boolean enableLin = not linearizeWindow or not linOut
+    "Disable linear part when linearizing model and in the outer part.";
+
   IDEAS.Buildings.Components.BaseClasses.MultiLayerLucent layMul(
     final A=A*(1 - frac),
     final inc=inc,
     final nLay=glazing.nLay,
-    final mats=glazing.mats)
+    final mats=glazing.mats) if
+       enableLin
     "declaration of array of resistances and capacitances for wall simulation"
     annotation (Placement(transformation(extent={{-10,-40},{10,-20}})));
   IDEAS.Buildings.Components.BaseClasses.ExteriorConvection eCon(final A=A*(1
-         - frac))
+         - frac)) if
+      enableLin
     "convective surface heat transimission on the exterior side of the wall"
     annotation (Placement(transformation(extent={{-20,-40},{-40,-20}})));
   IDEAS.Buildings.Components.BaseClasses.InteriorConvectionWindow iCon(final A=
-        A*(1 - frac), final inc=inc)
+        A*(1 - frac), final inc=inc) if
+      enableLin
     "convective surface heat transimission on the interior side of the wall"
     annotation (Placement(transformation(extent={{20,-40},{40,-20}})));
   IDEAS.Buildings.Components.BaseClasses.ExteriorHeatRadiation skyRad(final A=A
-        *(1 - frac))
+        *(1 - frac)) if
+      enableLin
     "determination of radiant heat exchange with the environment and sky"
     annotation (Placement(transformation(extent={{-20,-20},{-40,0}})));
   IDEAS.Buildings.Components.BaseClasses.SwWindowResponse solWin(
@@ -65,23 +78,25 @@ protected
     final SwAbs=glazing.SwAbs,
     final SwTrans=glazing.SwTrans,
     final SwTransDif=glazing.SwTransDif,
-    final SwAbsDif=glazing.SwAbsDif)
+    final SwAbsDif=glazing.SwAbsDif,
+    linearize=linearizeWindow,
+    createOutputs=linOut)
     annotation (Placement(transformation(extent={{-10,-70},{10,-50}})));
 
   IDEAS.Buildings.Components.BaseClasses.InteriorConvection iConFra(A=A*frac,
-      inc=inc) if fraType.present
+      inc=inc) if fraType.present and enableLin
     "convective surface heat transimission on the interior side of the wall"
     annotation (Placement(transformation(extent={{20,70},{40,90}})));
   IDEAS.Buildings.Components.BaseClasses.ExteriorHeatRadiation skyRadFra(final
-      A=A*frac) if       fraType.present
+      A=A*frac) if       fraType.present and enableLin
     "determination of radiant heat exchange with the environment and sky"
     annotation (Placement(transformation(extent={{-20,80},{-40,100}})));
   IDEAS.Buildings.Components.BaseClasses.ExteriorConvection eConFra(final A=A*
-        frac) if fraType.present
+        frac) if fraType.present and enableLin
     "convective surface heat transimission on the exterior side of the wall"
     annotation (Placement(transformation(extent={{-20,60},{-40,80}})));
   Modelica.Thermal.HeatTransfer.Components.ThermalConductor layFra(final G=
-        fraType.U_value*A*frac) if fraType.present  annotation (Placement(transformation(extent={{-10,70},{10,90}})));
+        fraType.U_value*A*frac) if fraType.present and enableLin  annotation (Placement(transformation(extent={{-10,70},{10,90}})));
 
   Modelica.Blocks.Sources.RealExpression QDesign(y=QTra_design)
     annotation (Placement(transformation(extent={{-10,40},{10,60}})));
@@ -92,14 +107,20 @@ public
     numAzi=sim.numAzi,
     offsetAzi=sim.offsetAzi,
     ceilingInc=sim.ceilingInc,
-    lat=sim.lat)
+    lat=sim.lat) if enableNonLin
     annotation (Placement(transformation(extent={{-100,-70},{-80,-50}})));
-  Modelica.Blocks.Math.Gain gainDir(k=A*(1 - frac))
+  Modelica.Blocks.Math.Gain gainDir(k=A*(1 - frac)) if enableNonLin
     annotation (Placement(transformation(extent={{-70,-52},{-62,-44}})));
-  Modelica.Blocks.Math.Gain gainDif(k=A*(1 - frac))
+  Modelica.Blocks.Math.Gain gainDif(k=A*(1 - frac)) if enableNonLin
     annotation (Placement(transformation(extent={{-70,-62},{-62,-54}})));
   Modelica.Blocks.Routing.RealPassThrough Tdes "Design temperature passthrough"
     annotation (Placement(transformation(extent={{60,70},{80,90}})));
+  Modelica.Thermal.HeatTransfer.Sources.FixedTemperature fixedTemp[4](each T=293.15) if
+     enableNonLin "Dummy connection for heatports"
+                                     annotation (Placement(transformation(
+        extent={{-10,-10},{10,10}},
+        rotation=90,
+        origin={70,-10})));
 initial equation
   QTra_design =U_value*A*(273.15 + 21 - Tdes.y);
 
@@ -265,6 +286,47 @@ equation
   connect(Tdes.u, propsBus_a.weaBus.Tdes) annotation (Line(
       points={{58,80},{50,80},{50,40}},
       color={0,0,127},
+      smooth=Smooth.None));
+  connect(solWin.iSolDifOutput, propsBus_a.iSolDifOutput) annotation (Line(
+      points={{10.6,-68},{50,-68},{50,40}},
+      color={0,0,127},
+      smooth=Smooth.None));
+  connect(solWin.iSolDirOutput, propsBus_a.iSolDirOutput) annotation (Line(
+      points={{10.6,-65},{50,-65},{50,40}},
+      color={0,0,127},
+      smooth=Smooth.None));
+  connect(solWin.AbsQFlowOutput, propsBus_a.AbsQFlowOutput) annotation (Line(
+      points={{10.6,-62},{50,-62},{50,40}},
+      color={0,0,127},
+      smooth=Smooth.None));
+  connect(solWin.iSolDifInput, propsBus_a.iSolDifOutput) annotation (Line(
+      points={{10.4,-59},{50,-59},{50,40}},
+      color={0,0,127},
+      smooth=Smooth.None));
+  connect(solWin.iSolDirInput, propsBus_a.iSolDirOutput) annotation (Line(
+      points={{10.4,-55},{50,-55},{50,40}},
+      color={0,0,127},
+      smooth=Smooth.None));
+  connect(solWin.AbsQFlowInput, propsBus_a.AbsQFlowOutput) annotation (
+      Line(
+      points={{10.4,-51},{50,-51},{50,40}},
+      color={0,0,127},
+      smooth=Smooth.None));
+  connect(fixedTemp[1].port, propsBus_a.surfCon) annotation (Line(
+      points={{70,0},{70,40},{50,40}},
+      color={191,0,0},
+      smooth=Smooth.None));
+  connect(fixedTemp[2].port, propsBus_a.surfRad) annotation (Line(
+      points={{70,0},{70,40},{50,40}},
+      color={191,0,0},
+      smooth=Smooth.None));
+  connect(fixedTemp[3].port, propsBus_a.iSolDir) annotation (Line(
+      points={{70,0},{70,40},{50,40}},
+      color={191,0,0},
+      smooth=Smooth.None));
+  connect(fixedTemp[4].port, propsBus_a.iSolDif) annotation (Line(
+      points={{70,0},{70,40},{50,40}},
+      color={191,0,0},
       smooth=Smooth.None));
   annotation (
     Icon(coordinateSystem(preserveAspectRatio=true, extent={{-50,-100},{50,100}}),
