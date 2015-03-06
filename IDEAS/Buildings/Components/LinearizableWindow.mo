@@ -5,7 +5,7 @@ model LinearizableWindow "Window with options for enabling linearization"
 
   parameter Boolean linearizeWindow = false
     "Enable linearization inputs/outputs";
-  parameter Boolean linOut "'Outer' window model when linearizing";
+  parameter Boolean linOut = false "'Outer' window model when linearizing";
 
   parameter Modelica.SIunits.Area A "Total window and windowframe area";
   parameter Real frac(
@@ -34,7 +34,7 @@ model LinearizableWindow "Window with options for enabling linearization"
     constrainedby Interfaces.StateShading(final azi=azi) "Shading type" annotation (Placement(transformation(extent={{-36,-70},{-26,-50}})),
       __Dymola_choicesAllMatching=true, Dialog(group="Construction details"));
 
-  Modelica.Blocks.Interfaces.RealInput Ctrl if shaType.controlled
+  Modelica.Blocks.Interfaces.RealInput Ctrl if enableNonLin
     "Control signal between 0 and 1, i.e. 1 is fully closed" annotation (
       Placement(transformation(
         extent={{20,-20},{-20,20}},
@@ -107,7 +107,7 @@ public
     numAzi=sim.numAzi,
     offsetAzi=sim.offsetAzi,
     ceilingInc=sim.ceilingInc,
-    lat=sim.lat) if enableNonLin
+    lat=sim.lat)
     annotation (Placement(transformation(extent={{-100,-70},{-80,-50}})));
   Modelica.Blocks.Math.Gain gainDir(k=A*(1 - frac)) if enableNonLin
     annotation (Placement(transformation(extent={{-70,-52},{-62,-44}})));
@@ -116,11 +116,16 @@ public
   Modelica.Blocks.Routing.RealPassThrough Tdes "Design temperature passthrough"
     annotation (Placement(transformation(extent={{60,70},{80,90}})));
   Modelica.Thermal.HeatTransfer.Sources.FixedTemperature fixedTemp[4](each T=293.15) if
-     enableNonLin "Dummy connection for heatports"
+     enableNonLin and linearizeWindow "Dummy connection for heatports"
                                      annotation (Placement(transformation(
         extent={{-10,-10},{10,10}},
         rotation=90,
         origin={70,-10})));
+  Interfaces.WinBus winBus(nLay=glazing.nLay) if
+                              linearizeWindow annotation (Placement(transformation(
+        extent={{-20,-20},{20,20}},
+        rotation=270,
+        origin={52,-60})));
 initial equation
   QTra_design =U_value*A*(273.15 + 21 - Tdes.y);
 
@@ -133,14 +138,16 @@ equation
       points={{-20,-10},{-16,-10},{-16,-30},{-10,-30}},
       color={191,0,0},
       smooth=Smooth.None));
-  connect(solWin.iSolDir, propsBus_a.iSolDir) annotation (Line(
+  if enableLin then
+    connect(solWin.iSolDir, propsBus_a.iSolDir) annotation (Line(
       points={{-2,-70},{-2,-80},{50,-80},{50,40}},
       color={191,0,0},
       smooth=Smooth.None));
-  connect(solWin.iSolDif, propsBus_a.iSolDif) annotation (Line(
-      points={{2,-70},{0,-70},{0,-80},{50,-80},{50,40}},
+    connect(solWin.iSolDif, propsBus_a.iSolDif) annotation (Line(
+      points={{2,-70},{2,-80},{50,-80},{50,40}},
       color={191,0,0},
       smooth=Smooth.None));
+  end if;
   connect(solWin.iSolAbs, layMul.port_gain) annotation (Line(
       points={{0,-50},{0,-40}},
       color={191,0,0},
@@ -287,31 +294,6 @@ equation
       points={{58,80},{50,80},{50,40}},
       color={0,0,127},
       smooth=Smooth.None));
-  connect(solWin.iSolDifOutput, propsBus_a.iSolDifOutput) annotation (Line(
-      points={{10.6,-68},{50,-68},{50,40}},
-      color={0,0,127},
-      smooth=Smooth.None));
-  connect(solWin.iSolDirOutput, propsBus_a.iSolDirOutput) annotation (Line(
-      points={{10.6,-65},{50,-65},{50,40}},
-      color={0,0,127},
-      smooth=Smooth.None));
-  connect(solWin.AbsQFlowOutput, propsBus_a.AbsQFlowOutput) annotation (Line(
-      points={{10.6,-62},{50,-62},{50,40}},
-      color={0,0,127},
-      smooth=Smooth.None));
-  connect(solWin.iSolDifInput, propsBus_a.iSolDifOutput) annotation (Line(
-      points={{10.4,-59},{50,-59},{50,40}},
-      color={0,0,127},
-      smooth=Smooth.None));
-  connect(solWin.iSolDirInput, propsBus_a.iSolDirOutput) annotation (Line(
-      points={{10.4,-55},{50,-55},{50,40}},
-      color={0,0,127},
-      smooth=Smooth.None));
-  connect(solWin.AbsQFlowInput, propsBus_a.AbsQFlowOutput) annotation (
-      Line(
-      points={{10.4,-51},{50,-51},{50,40}},
-      color={0,0,127},
-      smooth=Smooth.None));
   connect(fixedTemp[1].port, propsBus_a.surfCon) annotation (Line(
       points={{70,0},{70,40},{50,40}},
       color={191,0,0},
@@ -327,6 +309,35 @@ equation
   connect(fixedTemp[4].port, propsBus_a.iSolDif) annotation (Line(
       points={{70,0},{70,40},{50,40}},
       color={191,0,0},
+      smooth=Smooth.None));
+ for i in 1:solWin.nLay loop
+   if linearizeWindow and not linOut then
+   end if;
+ end for;
+
+  connect(solWin.AbsQFlowInput, winBus.AbsQFlow) annotation (Line(
+      points={{10.4,-51},{34.2,-51},{34.2,-60},{52,-60}},
+      color={0,0,127},
+      smooth=Smooth.None));
+  connect(solWin.iSolDirInput, winBus.iSolDir) annotation (Line(
+      points={{10.4,-55},{32.2,-55},{32.2,-60},{52,-60}},
+      color={0,0,127},
+      smooth=Smooth.None));
+  connect(solWin.iSolDifInput, winBus.iSolDif) annotation (Line(
+      points={{10.4,-59},{30.2,-59},{30.2,-60},{52,-60}},
+      color={0,0,127},
+      smooth=Smooth.None));
+  connect(solWin.iSolDirOutput, winBus.iSolDir) annotation (Line(
+      points={{10.6,-65},{32.3,-65},{32.3,-60},{52,-60}},
+      color={0,0,127},
+      smooth=Smooth.None));
+  connect(solWin.iSolDifOutput, winBus.iSolDif) annotation (Line(
+      points={{10.6,-68},{30,-68},{30,-60},{52,-60}},
+      color={0,0,127},
+      smooth=Smooth.None));
+  connect(solWin.AbsQFlowOutput, winBus.AbsQFlow) annotation (Line(
+      points={{10.6,-62},{32,-62},{32,-60},{52,-60}},
+      color={0,0,127},
       smooth=Smooth.None));
   annotation (
     Icon(coordinateSystem(preserveAspectRatio=true, extent={{-50,-100},{50,100}}),

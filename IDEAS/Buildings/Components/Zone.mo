@@ -3,8 +3,9 @@ model Zone "thermal building zone"
   import Buildings;
 
   extends IDEAS.Buildings.Components.Interfaces.StateZone;
-  extends IDEAS.Fluid.Interfaces.LumpedVolumeDeclarations(redeclare package
-      Medium = IDEAS.Experimental.Media.AirPTDecoupled);
+  extends IDEAS.Fluid.Interfaces.LumpedVolumeDeclarations(redeclare
+      replaceable package Medium =
+               IDEAS.Experimental.Media.AirPTDecoupled);
 
   outer Modelica.Fluid.System system
     annotation (Placement(transformation(extent={{-80,80},{-60,100}})));
@@ -18,6 +19,7 @@ model Zone "thermal building zone"
   parameter Real corrCV=5 "Multiplication factor for the zone air capacity";
 
   parameter Boolean linear=true "Linearized computation of long wave radiation";
+  parameter Boolean linearize=false "Add connections for linearization";
 
   final parameter Modelica.SIunits.Power QInf_design=1012*1.204*V/3600*n50/20*(273.15
        + 21 - sim.Tdes)
@@ -89,6 +91,13 @@ protected
   Modelica.Thermal.HeatTransfer.Sensors.TemperatureSensor senTem
     annotation (Placement(transformation(extent={{0,-28},{-16,-12}})));
 
+public
+  input BoundaryConditions.WeatherData.Bus
+                                     weaBus(final numSolBus=sim.numAzi + 1) if
+                                                                           linearize
+    annotation (Placement(transformation(extent={{-10,-10},{10,10}},
+        rotation=90,
+        origin={-100,-2})));
 initial equation
   Q_design=QInf_design+QRH_design+QTra_design; //Total design load for zone (additional ventilation losses are calculated in the ventilation system)
 equation
@@ -206,15 +215,24 @@ end for;
       smooth=Smooth.None));
 
 for i in 1:nSurf loop
-connect(sim.weaBus, propsBus[i].weaBus) annotation (Line(
+   if linearize then
+     connect(weaBus, propsBus[i].weaBus) annotation (Line(
+        points={{-100,-2},{-100,40}},
+        color={255,204,51},
+        thickness=0.5,
+        smooth=Smooth.None));
+   else
+    connect(sim.weaBus, propsBus[i].weaBus) annotation (Line(
        points={{-88.6,97.2},{-88.6,100},{-100,100},{-100,40}},
        color={255,204,51},
        thickness=0.5,
        smooth=Smooth.None));
+   end if;
 end for;
 
   annotation (
-    Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}),
+    Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,
+            100}}),
          graphics),
     Documentation(info="<html>
 <p><h4><font color=\"#008000\">General description</font></h4></p>
@@ -229,6 +247,6 @@ end for;
 <p><h4><font color=\"#008000\">Validation </font></h4></p>
 <p>By means of the <code>BESTEST.mo</code> examples in the <code>Validation.mo</code> package.</p>
 </html>"),
-    Diagram(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,
-            100}}),     graphics));
+    Diagram(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{
+            100,100}}), graphics));
 end Zone;
