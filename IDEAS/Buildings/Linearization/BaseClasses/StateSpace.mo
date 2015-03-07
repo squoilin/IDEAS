@@ -51,7 +51,7 @@ equation
   for i in 1:nWin loop
     connect(winBus[i].AbsQFlow[1:winNLay[i]], stateSpace.u[(offWinCon[i]+1):(offWinCon[i]+winNLay[i])]);
     connect(winBus[i].iSolDir, stateSpace.u[(offWinCon[i]+winNLay[i])+1]);
-    connect(winBus[i].iSolDir, stateSpace.u[(offWinCon[i]+winNLay[i])+2]);
+    connect(winBus[i].iSolDif, stateSpace.u[(offWinCon[i]+winNLay[i])+2]);
   end for;
 
   connect(weaBus, sim.weaBus) annotation (Line(
