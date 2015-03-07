@@ -63,12 +63,24 @@ equation
       thickness=0.5,
       smooth=Smooth.None));
   annotation (Diagram(coordinateSystem(preserveAspectRatio=false, extent={{-100,
-            -100},{100,100}}), graphics), Documentation(revisions="<html>
+            -100},{100,100}}), graphics),
+    Documentation(revisions="<html>
 <ul>
 <li>
 March, 2015 by Filip Jorissen:<br/>
 First implementation
 </li>
 </ul>
-</html>"));
+</html>", info="<html>
+<p>script for running validation:</p>
+<pre>
+re=Modelica_LinearSystems2.ModelAnalysis.Linearize(&QUOT;IDEAS.Buildings.Linearization.BaseClasses.LinCase900&QUOT;);
+writeMatrix(fileName=&QUOT;ss.mat&QUOT;,matrixName=&QUOT;A&QUOT;,matrix=re.A);
+writeMatrix(fileName=&QUOT;ss.mat&QUOT;,matrixName=&QUOT;B&QUOT;,matrix=re.B, append=true);
+writeMatrix(fileName=&QUOT;ss.mat&QUOT;,matrixName=&QUOT;C&QUOT;,matrix=re.C, append=true);
+writeMatrix(fileName=&QUOT;ss.mat&QUOT;,matrixName=&QUOT;D&QUOT;,matrix=re.D, append=true);
+simulateModel(&QUOT;IDEAS.Buildings.Linearization.LinearizationValidation&QUOT;, stopTime=1e+06, method=&QUOT;dassl&QUOT;, resultFile=&QUOT;LinearizationValidation&QUOT;);
+createPlot(id=1, position={0, 0, 1065, 643}, y={&QUOT;stateSpace.stateSpace.x[2]&QUOT;, &QUOT;linCase900_1.gF.vol.T&QUOT;}, range={0.0, 1000000.0, 265.0, 295.0}, grid=true, filename=&QUOT;dsres.mat&QUOT;, leftTitleType=1, bottomTitleType=1, colors={{0,0,255}, {255,0,0}});</pre>
+</html>"),
+    __Dymola_Commands);
 end LinearizationValidation;
