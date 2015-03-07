@@ -5,8 +5,8 @@ expandable connector WinBus "Linearized window bus"
   parameter Integer nLay = 1 "Number of window layers";
 
   Real[nLay] AbsQFlow(start=fill(1,nLay));
-  Real iSolDir(start=1);
-  Real iSolDif(start=1);
+  Real iSolDir(start=100);
+  Real iSolDif(start=100);
 
   annotation (Documentation(revisions="<html>
 <ul>
