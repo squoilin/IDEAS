@@ -35,7 +35,7 @@ model OuterWall "Opaque building envelope construction"
     "declaration of array of resistances and capacitances for wall simulation"
     annotation (Placement(transformation(extent={{-10,-40},{10,-20}})));
   IDEAS.Buildings.Components.BaseClasses.ExteriorConvection extCon(final A=
-        AWall)
+        AWall, linearise=linearise)
     "convective surface heat transimission on the exterior side of the wall"
     annotation (Placement(transformation(extent={{-20,-60},{-40,-40}})));
   IDEAS.Buildings.Components.BaseClasses.InteriorConvection intCon(final A=
@@ -66,6 +66,7 @@ model OuterWall "Opaque building envelope construction"
     annotation (Placement(transformation(extent={{-92,-36},{-72,-16}})));
   Modelica.Blocks.Routing.RealPassThrough Tdes "Design temperature passthrough"
     annotation (Placement(transformation(extent={{20,60},{0,80}})));
+  parameter Boolean linearise=false "Use wall linearisation";
 initial equation
   QTra_design =U_value*AWall*(273.15 + 21 - Tdes.y);
 
