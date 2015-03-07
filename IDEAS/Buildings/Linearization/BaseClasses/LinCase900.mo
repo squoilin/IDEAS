@@ -5,13 +5,14 @@ model LinCase900
 protected
   Components.Zone gF(
     V=129.6,
-    n50=0.5*20,
     corrCV=0.822,
     T_start=293.15,
     linear=true,
     redeclare package Medium = Medium,
     linearize=true,
-    nSurf=9) annotation (Placement(transformation(extent={{50,-2},{90,38}})));
+    nSurf=9,
+    n50=0*0.5*20)
+    annotation (Placement(transformation(extent={{50,-2},{90,38}})));
   Components.OuterWall[4] wall(
     final AWall={21.6,16.2,9.6,16.2},
     final azi={IDEAS.Constants.North,IDEAS.Constants.East,IDEAS.Constants.South,
@@ -20,19 +21,17 @@ protected
         IDEAS.Constants.Wall},
     redeclare final parameter
       IDEAS.Buildings.Validation.Data.Constructions.HeavyWall constructionType,
-
     redeclare final parameter
       IDEAS.Buildings.Validation.Data.Insulation.foaminsulation insulationType,
-
-    final insulationThickness={0.0615,0.0615,0.0615,0.0615}) annotation (
-      Placement(transformation(
+    final insulationThickness={0.0615,0.0615,0.0615,0.0615},
+    each linearise=true) annotation (Placement(transformation(
         extent={{-5,-10},{5,10}},
         rotation=90,
         origin={-39,-16})));
+
   Components.BoundaryWall floor(
     redeclare final parameter
       IDEAS.Buildings.Validation.Data.Constructions.HeavyFloor constructionType,
-
     redeclare final parameter
       IDEAS.Buildings.Validation.Data.Insulation.insulation insulationType,
     final insulationThickness=1.003,
@@ -42,6 +41,7 @@ protected
         extent={{-5,-10},{5,10}},
         rotation=90,
         origin={-9,-16})));
+
   Components.LinearizableWindow[3] win(
     final A={6,6,6},
     redeclare final parameter
@@ -59,23 +59,24 @@ protected
   Components.OuterWall roof(
     redeclare final parameter
       IDEAS.Buildings.Validation.Data.Constructions.LightRoof constructionType,
-
     redeclare final parameter
       IDEAS.Buildings.Validation.Data.Insulation.fiberglass insulationType,
     final insulationThickness=0.1118,
     final AWall=48,
     final inc=IDEAS.Constants.Ceiling,
-    final azi=IDEAS.Constants.South) annotation (Placement(transformation(
+    final azi=IDEAS.Constants.South,
+    linearise=true) annotation (Placement(transformation(
         extent={{-5,-10},{5,10}},
         rotation=90,
         origin={-69,-16})));
+
 public
   inner SimInfoManager       sim
     "Simulation information manager for climate data"
     annotation (Placement(transformation(extent={{-102,78},{-82,98}})));
   Fluid.Sources.Boundary_pT bou(nPorts=1, redeclare package Medium = Medium)
     annotation (Placement(transformation(extent={{-14,62},{6,82}})));
-  replaceable package Medium = IDEAS.Experimental.Media.AirPTDecoupled
+  replaceable package Medium = Modelica.Media.Air.SimpleAir
     constrainedby Modelica.Media.Interfaces.PartialMedium;
   inner Modelica.Fluid.System system
   annotation (Placement(transformation(extent={{56,-94},{76,-74}})));
@@ -139,8 +140,8 @@ equation
   annotation (Diagram(coordinateSystem(preserveAspectRatio=false, extent={{-100,
             -100},{100,100}}), graphics), Documentation(info="<html>
 <p>Run script to linearize:</p>
-<pre>
-re=Modelica_LinearSystems2.ModelAnalysis.Linearize(&QUOT;IDEAS.Buildings.Components.Examples.LinCase900&QUOT;);
+<pre> 
+re=Modelica_LinearSystems2.ModelAnalysis.Linearize(&QUOT;IDEAS.Buildings.Linearization.BaseClasses.LinCase900&QUOT;);
 writeMatrix(fileName=&QUOT;ss.mat&QUOT;,matrixName=&QUOT;A&QUOT;,matrix=re.A);
 writeMatrix(fileName=&QUOT;ss.mat&QUOT;,matrixName=&QUOT;B&QUOT;,matrix=re.B, append=true);
 writeMatrix(fileName=&QUOT;ss.mat&QUOT;,matrixName=&QUOT;C&QUOT;,matrix=re.C, append=true);
