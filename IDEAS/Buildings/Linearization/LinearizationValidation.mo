@@ -25,7 +25,7 @@ protected
 public
   Modelica.Blocks.Sources.Constant const(k=0)
     annotation (Placement(transformation(extent={{-8,-2},{-28,18}})));
-  BaseClasses.StateSpace stateSpace(x_start=fill(293, stateSpace.states))
+  BaseClasses.StateSpace stateSpace(x_start=fill(293.15, stateSpace.states))
     annotation (Placement(transformation(extent={{0,-40},{20,-20}})));
 equation
   connect(linCase900_1.weaBus1, sim.weaBus) annotation (Line(
@@ -72,15 +72,16 @@ First implementation
 </li>
 </ul>
 </html>", info="<html>
-<p>script for running validation:</p>
-<pre>
-re=Modelica_LinearSystems2.ModelAnalysis.Linearize(&QUOT;IDEAS.Buildings.Linearization.BaseClasses.LinCase900&QUOT;);
+<p>Script for running validation:</p>
+<pre>re=Modelica_LinearSystems2.ModelAnalysis.Linearize(&QUOT;IDEAS.Buildings.Linearization.BaseClasses.LinCase900&QUOT;);
 writeMatrix(fileName=&QUOT;ss.mat&QUOT;,matrixName=&QUOT;A&QUOT;,matrix=re.A);
 writeMatrix(fileName=&QUOT;ss.mat&QUOT;,matrixName=&QUOT;B&QUOT;,matrix=re.B, append=true);
 writeMatrix(fileName=&QUOT;ss.mat&QUOT;,matrixName=&QUOT;C&QUOT;,matrix=re.C, append=true);
 writeMatrix(fileName=&QUOT;ss.mat&QUOT;,matrixName=&QUOT;D&QUOT;,matrix=re.D, append=true);
 simulateModel(&QUOT;IDEAS.Buildings.Linearization.LinearizationValidation&QUOT;, stopTime=1e+06, method=&QUOT;dassl&QUOT;, resultFile=&QUOT;LinearizationValidation&QUOT;);
-createPlot(id=1, position={0, 0, 1065, 643}, y={&QUOT;stateSpace.stateSpace.x[2]&QUOT;, &QUOT;linCase900_1.gF.vol.T&QUOT;}, range={0.0, 1000000.0, 265.0, 295.0}, grid=true, filename=&QUOT;dsres.mat&QUOT;, leftTitleType=1, bottomTitleType=1, colors={{0,0,255}, {255,0,0}});</pre>
+createPlot(id=1, position={0, 0, 1065, 643}, y={&QUOT;stateSpace.stateSpace.x[2]&QUOT;, &QUOT;linCase900_1.gF.vol.T&QUOT;}, range={0.0, 1000000.0, 265.0, 295.0}, grid=true, leftTitleType=1, bottomTitleType=1, colors={{0,0,255}, {255,0,0}});
+
+Make sure to enable output of protected variables.</pre>
 </html>"),
     __Dymola_Commands);
 end LinearizationValidation;
