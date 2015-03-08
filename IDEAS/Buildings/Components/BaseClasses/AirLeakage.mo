@@ -20,7 +20,7 @@ extends IDEAS.Fluid.Interfaces.PartialTwoPortInterface;
     redeclare package Medium = Medium,
     allowFlowReversal=false,
     dynamicBalance=false,
-    m_flow_nominal=m_flow_nominal)
+    m_flow_nominal=m_flow_nominal + 0.0001)
     annotation (Placement(transformation(extent={{60,-10},{80,10}})));
   Modelica.Thermal.HeatTransfer.Sources.PrescribedTemperature
     prescribedTemperature
