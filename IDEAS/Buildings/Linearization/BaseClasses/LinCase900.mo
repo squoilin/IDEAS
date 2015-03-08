@@ -76,7 +76,7 @@ public
     annotation (Placement(transformation(extent={{-102,78},{-82,98}})));
   Fluid.Sources.Boundary_pT bou(nPorts=1, redeclare package Medium = Medium)
     annotation (Placement(transformation(extent={{-14,62},{6,82}})));
-  replaceable package Medium = Modelica.Media.Air.SimpleAir
+  replaceable package Medium = Buildings.Media.GasesConstantDensity.SimpleAir
     constrainedby Modelica.Media.Interfaces.PartialMedium;
   inner Modelica.Fluid.System system
   annotation (Placement(transformation(extent={{56,-94},{76,-74}})));
@@ -90,6 +90,8 @@ public
         extent={{-20,-20},{20,20}},
         rotation=90,
         origin={-98,-50})));
+  Modelica.Blocks.Interfaces.RealOutput y
+    annotation (Placement(transformation(extent={{96,-30},{116,-10}})));
 equation
    connect(roof.propsBus_a,gF. propsBus[1]) annotation (Line(
       points={{-73,-11},{-73,29.5556},{50,29.5556}},
@@ -136,6 +138,10 @@ equation
       points={{27,-10.8},{27,-50},{-98,-50}},
       color={255,204,51},
       thickness=0.5,
+      smooth=Smooth.None));
+  connect(gF.TSensor, y) annotation (Line(
+      points={{91.2,18},{106,18},{106,-20}},
+      color={0,0,127},
       smooth=Smooth.None));
   annotation (Diagram(coordinateSystem(preserveAspectRatio=false, extent={{-100,
             -100},{100,100}}), graphics), Documentation(info="<html>

@@ -1,7 +1,7 @@
 within IDEAS.Buildings.Linearization;
 model LinearizationValidation
   extends Modelica.Icons.Example;
-  BaseClasses.LinCase900 linCase900_1
+  BaseClasses.LinCase900 linCase900_1(win(linearizeWindow=false))
     annotation (Placement(transformation(extent={{0,20},{20,40}})));
 public
   inner SimInfoManager       sim
@@ -27,6 +27,9 @@ public
     annotation (Placement(transformation(extent={{-8,-2},{-28,18}})));
   BaseClasses.StateSpace stateSpace(x_start=fill(293.15, stateSpace.states))
     annotation (Placement(transformation(extent={{0,-40},{20,-20}})));
+
+initial equation
+  stateSpace.stateSpace.y[1] = linCase900_1.y;
 equation
   connect(linCase900_1.weaBus1, sim.weaBus) annotation (Line(
       points={{0.2,33.4},{-50,33.4},{-50,78},{-90.6,78},{-90.6,63.2}},
@@ -79,7 +82,8 @@ writeMatrix(fileName=&QUOT;ss.mat&QUOT;,matrixName=&QUOT;B&QUOT;,matrix=re.B, ap
 writeMatrix(fileName=&QUOT;ss.mat&QUOT;,matrixName=&QUOT;C&QUOT;,matrix=re.C, append=true);
 writeMatrix(fileName=&QUOT;ss.mat&QUOT;,matrixName=&QUOT;D&QUOT;,matrix=re.D, append=true);
 simulateModel(&QUOT;IDEAS.Buildings.Linearization.LinearizationValidation&QUOT;, stopTime=1e+06, method=&QUOT;dassl&QUOT;, resultFile=&QUOT;LinearizationValidation&QUOT;);
-createPlot(id=1, position={0, 0, 1065, 643}, y={&QUOT;stateSpace.stateSpace.x[2]&QUOT;, &QUOT;linCase900_1.gF.vol.T&QUOT;}, range={0.0, 1000000.0, 265.0, 295.0}, grid=true, leftTitleType=1, bottomTitleType=1, colors={{0,0,255}, {255,0,0}});
+createPlot(id=1,&nbsp;position={0,&nbsp;0,&nbsp;1211,&nbsp;619},&nbsp;y={&QUOT;stateSpace.y[1]&QUOT;,&nbsp;&QUOT;linCase900_1.y&QUOT;},&nbsp;range={0.0,&nbsp;1000000.0,&nbsp;272.0,&nbsp;294.0},&nbsp;grid=true,&nbsp;leftTitleType=1,&nbsp;bottomTitleType=1,&nbsp;colors={{0,0,255},&nbsp;{255,0,0}});
+
 
 Make sure to enable output of protected variables.</pre>
 </html>"),
