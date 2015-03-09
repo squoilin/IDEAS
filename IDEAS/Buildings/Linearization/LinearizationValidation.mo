@@ -1,7 +1,7 @@
 within IDEAS.Buildings.Linearization;
 model LinearizationValidation
   extends Modelica.Icons.Example;
-  BaseClasses.LinCase900 linCase900_1
+  BaseClasses.LinCase900 linCase900_1(win(each linearizeWindow=false)) if enableExact.k
     annotation (Placement(transformation(extent={{0,20},{20,40}})));
 public
   inner SimInfoManager       sim
@@ -25,13 +25,20 @@ protected
 public
   Modelica.Blocks.Sources.Constant const(k=0)
     annotation (Placement(transformation(extent={{-8,-2},{-28,18}})));
-  BaseClasses.StateSpace stateSpace(x_start=fill(293.15, stateSpace.states))
+  BaseClasses.StateSpace stateSpace(x_start=fill(293.15, stateSpace.states)) if enableLin.k
     annotation (Placement(transformation(extent={{0,-40},{20,-20}})));
 
-  Modelica.Blocks.Math.Add error(k2=-1)
+  Modelica.Blocks.Math.Add error(k2=-1) if enableLin.k and enableExact.k
     annotation (Placement(transformation(extent={{40,0},{60,20}})));
+  Modelica.Blocks.Sources.BooleanConstant enableExact(k=true)
+    annotation (Placement(transformation(extent={{-100,-40},{-80,-20}})));
+  Modelica.Blocks.Sources.BooleanConstant enableLin(k=true)
+    annotation (Placement(transformation(extent={{-100,-80},{-80,-60}})));
 initial equation
+
+  //remove initial equation when only enabling one of the two cases
   stateSpace.stateSpace.y[1] = linCase900_1.y;
+
 equation
   connect(linCase900_1.weaBus1, sim.weaBus) annotation (Line(
       points={{0.2,33.4},{-50,33.4},{-50,78},{-90.6,78},{-90.6,63.2}},
@@ -99,7 +106,7 @@ Make sure to enable output of protected variables.</pre>
 </html>"),
     __Dymola_Commands,
     experiment(
-      StopTime=5e+06,
+      StopTime=1e+07,
       Tolerance=1e-06,
       __Dymola_Algorithm="Radau"),
     __Dymola_experimentSetupOutput);
