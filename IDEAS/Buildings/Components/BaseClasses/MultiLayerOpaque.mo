@@ -7,6 +7,8 @@ model MultiLayerOpaque "multiple material layers in series"
     "Location of the internal gain, 1 is after first layer";
   parameter Modelica.SIunits.Temperature T_start[nLay]=ones(nLay)*293.15
     "Start temperature for the layers";
+  parameter IDEAS.Buildings.Data.Interfaces.Material[nLay] mats
+    "Array of layer materials";
   final parameter Real R=sum(nMat.R) "total specific thermal resistance";
 
   IDEAS.Buildings.Components.BaseClasses.MonoLayerOpaque[nLay] nMat(
@@ -40,9 +42,6 @@ model MultiLayerOpaque "multiple material layers in series"
         extent={{10,-10},{-10,10}},
         rotation=-90,
         origin={0,100})));
-protected
-  parameter IDEAS.Buildings.Data.Interfaces.Material[nLay] mats
-    "Array of layer materials";
 
 equation
   connect(port_a, nMat[1].port_a);
