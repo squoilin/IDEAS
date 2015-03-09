@@ -1,7 +1,7 @@
 within IDEAS.Buildings.Linearization;
 model LinearizationValidation
   extends Modelica.Icons.Example;
-  BaseClasses.LinCase900 linCase900_1(win(each linearizeWindow=false))
+  BaseClasses.LinCase900 linCase900_1
     annotation (Placement(transformation(extent={{0,20},{20,40}})));
 public
   inner SimInfoManager       sim
@@ -51,15 +51,15 @@ equation
       smooth=Smooth.None));
   end for;
   connect(const.y, win[1].Ctrl) annotation (Line(
-      points={{-29,8},{-44,8},{-44,8},{-50,8},{-50,7},{-57,7}},
+      points={{-29,8},{-50,8},{-50,7},{-57,7}},
       color={0,0,127},
       smooth=Smooth.None));
   connect(const.y, win[2].Ctrl) annotation (Line(
-      points={{-29,8},{-44,8},{-44,8},{-50,8},{-50,7},{-57,7}},
+      points={{-29,8},{-50,8},{-50,7},{-57,7}},
       color={0,0,127},
       smooth=Smooth.None));
   connect(const.y, win[3].Ctrl) annotation (Line(
-      points={{-29,8},{-44,8},{-44,8},{-50,8},{-50,7},{-57,7}},
+      points={{-29,8},{-50,8},{-50,7},{-57,7}},
       color={0,0,127},
       smooth=Smooth.None));
   connect(stateSpace.winBus, win.winBus) annotation (Line(
