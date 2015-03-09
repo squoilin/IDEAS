@@ -1,7 +1,7 @@
 within IDEAS.Buildings.Linearization;
 model LinearizationValidation
   extends Modelica.Icons.Example;
-  BaseClasses.LinCase900 linCase900_1(win(linearizeWindow=false))
+  BaseClasses.LinCase900 linCase900_1(win(each linearizeWindow=false))
     annotation (Placement(transformation(extent={{0,20},{20,40}})));
 public
   inner SimInfoManager       sim

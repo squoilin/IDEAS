@@ -2,7 +2,6 @@ within IDEAS.Buildings.Linearization.BaseClasses;
 model LinCase900
   import Buildings;
 
-protected
   Components.Zone gF(
     V=129.6,
     corrCV=0.822,
