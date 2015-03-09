@@ -28,6 +28,8 @@ public
   BaseClasses.StateSpace stateSpace(x_start=fill(293.15, stateSpace.states))
     annotation (Placement(transformation(extent={{0,-40},{20,-20}})));
 
+  Modelica.Blocks.Math.Add error(k2=-1)
+    annotation (Placement(transformation(extent={{40,0},{60,20}})));
 initial equation
   stateSpace.stateSpace.y[1] = linCase900_1.y;
 equation
@@ -65,6 +67,14 @@ equation
       color={255,204,51},
       thickness=0.5,
       smooth=Smooth.None));
+  connect(error.u1, linCase900_1.y) annotation (Line(
+      points={{38,16},{30,16},{30,28},{20.6,28}},
+      color={0,0,127},
+      smooth=Smooth.None));
+  connect(error.u2, stateSpace.y[1]) annotation (Line(
+      points={{38,4},{28,4},{28,-30},{20.4,-30}},
+      color={0,0,127},
+      smooth=Smooth.None));
   annotation (Diagram(coordinateSystem(preserveAspectRatio=false, extent={{-100,
             -100},{100,100}}), graphics),
     Documentation(revisions="<html>
@@ -87,5 +97,10 @@ createPlot(id=1,&nbsp;position={0,&nbsp;0,&nbsp;1211,&nbsp;619},&nbsp;y={&QUOT;s
 
 Make sure to enable output of protected variables.</pre>
 </html>"),
-    __Dymola_Commands);
+    __Dymola_Commands,
+    experiment(
+      StopTime=5e+06,
+      Tolerance=1e-06,
+      __Dymola_Algorithm="Radau"),
+    __Dymola_experimentSetupOutput);
 end LinearizationValidation;
