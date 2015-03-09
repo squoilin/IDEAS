@@ -8,10 +8,6 @@ model BoundaryWall "Opaque wall with boundary conditions"
     "Inclination of the wall, i.e. 90deg denotes vertical";
   parameter Modelica.SIunits.Angle azi
     "Azimuth of the wall, i.e. 0deg denotes South";
-  Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a port_emb
-    "Port for gains by embedded active layers"
-    annotation (Placement(transformation(extent={{-10,-110},{10,-90}})));
-
   parameter Boolean use_T_in = false
     "Get the boundary temperature from the input connector";
   parameter Boolean use_Q_in = false
@@ -25,10 +21,27 @@ model BoundaryWall "Opaque wall with boundary conditions"
   final parameter Real U_value=1/(1/8 + sum(constructionType.mats.R) + 1/8)
     "Wall U-value";
 
-  final parameter Modelica.SIunits.Power QTra_design=U_value*AWall*(273.15 + 21 - TRef)
-    "Design heat losses at reference temperature of the boundary space";
+  Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a port_emb
+    "Port for gains by embedded active layers"
+    annotation (Placement(transformation(extent={{-10,-110},{10,-90}})));
+
+  Modelica.Blocks.Interfaces.RealInput T if use_T_in
+    annotation (Placement(transformation(
+          extent={{-60,50},{-40,70}}), iconTransformation(extent={{-60,50},{-40,
+            70}})));
+  Modelica.Blocks.Interfaces.RealInput Q_flow if use_Q_in
+    annotation (Placement(
+        transformation(extent={{-60,10},{-40,30}}), iconTransformation(extent={{
+            -60,10},{-40,30}})));
+  Modelica.Thermal.HeatTransfer.Sources.PrescribedHeatFlow prescribedHeatFlow if use_Q_in
+    annotation (Placement(transformation(extent={{-60,10},{-80,30}})));
+  Modelica.Thermal.HeatTransfer.Sources.PrescribedTemperature
+    prescribedTemperature if use_T_in
+    annotation (Placement(transformation(extent={{-60,50},{-80,70}})));
 
 protected
+  final parameter Modelica.SIunits.Power QTra_design=U_value*AWall*(273.15 + 21 - TRef)
+    "Design heat losses at reference temperature of the boundary space";
   IDEAS.Buildings.Components.BaseClasses.MultiLayerOpaque layMul(
     final A=AWall,
     final inc=inc,
@@ -45,18 +58,7 @@ protected
 
   Modelica.Blocks.Sources.RealExpression QDesign(y=QTra_design)
     annotation (Placement(transformation(extent={{-10,40},{10,60}})));
-public
-  Modelica.Blocks.Interfaces.RealInput T if use_T_in annotation (Placement(transformation(
-          extent={{-60,50},{-40,70}}), iconTransformation(extent={{-60,50},{-40,
-            70}})));
-  Modelica.Blocks.Interfaces.RealInput Q_flow if use_Q_in annotation (Placement(
-        transformation(extent={{-60,10},{-40,30}}), iconTransformation(extent={{
-            -60,10},{-40,30}})));
-  Modelica.Thermal.HeatTransfer.Sources.PrescribedHeatFlow prescribedHeatFlow if use_Q_in
-    annotation (Placement(transformation(extent={{-60,10},{-80,30}})));
-  Modelica.Thermal.HeatTransfer.Sources.PrescribedTemperature
-    prescribedTemperature if use_T_in
-    annotation (Placement(transformation(extent={{-60,50},{-80,70}})));
+
 equation
   connect(layMul.port_b, intCon_b.port_a) annotation (Line(
       points={{4.44089e-16,-30},{20,-30}},
@@ -103,28 +105,22 @@ equation
       index=1,
       extent={{6,3},{6,3}}));
 
-  if use_Q_in then
   connect(Q_flow, prescribedHeatFlow.Q_flow) annotation (Line(
       points={{-50,20},{-60,20}},
       color={0,0,127},
       smooth=Smooth.None));
-
-    connect(prescribedHeatFlow.port, layMul.port_a) annotation (Line(
+  connect(prescribedHeatFlow.port, layMul.port_a) annotation (Line(
       points={{-80,20},{-90,20},{-90,-30},{-20,-30}},
       color={191,0,0},
       smooth=Smooth.None));
-  end if;
-  if use_T_in then
   connect(T, prescribedTemperature.T) annotation (Line(
       points={{-50,60},{-58,60}},
       color={0,0,127},
       smooth=Smooth.None));
-
-    connect(prescribedTemperature.port, layMul.port_a) annotation (Line(
+  connect(prescribedTemperature.port, layMul.port_a) annotation (Line(
       points={{-80,60},{-90,60},{-90,-30},{-20,-30}},
       color={191,0,0},
       smooth=Smooth.None));
-  end if;
 
   annotation (
     Diagram(coordinateSystem(preserveAspectRatio=false,extent={{-100,-100},{100,
@@ -176,5 +172,12 @@ equation
 </ol></p>
 <p><h4><font color=\"#008000\">Validation </font></h4></p>
 <p>By means of the <code>BESTEST.mo</code> examples in the <code>Validation.mo</code> package.</p>
+</html>", revisions="<html>
+<ul>
+<li>
+March, 2015 by Filip Jorissen:<br/>
+Cleaned up implementation.
+</li>
+</ul>
 </html>"));
 end BoundaryWall;
