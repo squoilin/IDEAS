@@ -8,7 +8,10 @@ model EnergyConservationValidation
     zone(airModel(energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial)),
     zone1(airModel(energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial),
       redeclare Components.OccupancyType.OfficeWork occTyp,
-      redeclare Components.InternalGains.Simple intGai));
+      redeclare IDEAS.Buildings.Components.InternalGains.Occupants intGaiOcc,
+      redeclare IDEAS.Buildings.Components.InternalGains.Lighting intGaiLig,
+      redeclare Components.LightingControl.Fixed ligCtr(ctrFix=1),
+      redeclare Components.LightingType.LED ligTyp));
 
   Modelica.Blocks.Sources.Constant const(k=0)
     annotation (Placement(transformation(extent={{82,-68},{62,-48}})));
@@ -17,9 +20,10 @@ equation
 
   annotation (
     experiment(
-      StopTime=5e+06,
+      StopTime=5000000,
       __Dymola_NumberOfIntervals=5000,
-      Tolerance=1e-06),
+      Tolerance=1e-06,
+      __Dymola_Algorithm="Lsodar"),
     __Dymola_experimentSetupOutput,
     Diagram(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,
             100}})),
